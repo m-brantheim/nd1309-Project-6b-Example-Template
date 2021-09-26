@@ -156,11 +156,22 @@ contract SupplyChain {
   function harvestItem(uint _upc, address _originFarmerID, string _originFarmName, string _originFarmInformation, string  _originFarmLatitude, string  _originFarmLongitude, string  _productNotes) public 
   {
     // Add the new item as part of Harvest
-    
+    Item storage harvest = items[_upc];
+    harvest.sku = sku;
+    harvest.upc = _upc;
+    harvest.ownerID = _originFarmerID;
+    harvest.originFarmerID = _originFarmerID;
+    harvest.originFarmName = _originFarmName;
+    harvest.originFarmInformation = _originFarmInformation;
+    harvest.originFarmLatitude = _originFarmLatitude;
+    harvest.originFarmLongitude = _originFarmLongitude;
+    harvest.productID = sku + _upc;
+    harvest.productNotes = _productNotes;
+    harvest.itemState = State.Harvested;
     // Increment sku
     sku = sku + 1;
     // Emit the appropriate event
-    
+    emit Harvested(_upc);
   }
 
   // Define a function 'processtItem' that allows a farmer to mark an item 'Processed'
@@ -276,8 +287,16 @@ contract SupplyChain {
   ) 
   {
   // Assign values to the 8 parameters
-  
-    
+  Item storage item = items[_upc];
+  itemSKU = item.sku;
+  itemUPC = item.upc;
+  ownerID = item.ownerID;
+  originFarmerID = item.originFarmerID;
+  originFarmName = item.originFarmName;
+  originFarmInformation = item.originFarmInformation;
+  originFarmLatitude = item.originFarmLatitude;
+  originFarmLongitude = item.originFarmLongitude;
+
   return 
   (
   itemSKU,
