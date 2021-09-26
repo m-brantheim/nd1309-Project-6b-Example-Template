@@ -193,7 +193,7 @@ contract('SupplyChain', function(accounts) {
         let eventEmitted = false
         
         // Watch the emitted event Sold()
-        var event = supplyChain.Sold()
+        const event = supplyChain.Sold()
         await event.watch((err, res) => {
             eventEmitted = true
         })
@@ -239,19 +239,34 @@ contract('SupplyChain', function(accounts) {
         const supplyChain = await SupplyChain.deployed()
         
         // Declare and Initialize a variable for event
-        
+        let eventEmitted = false
         
         // Watch the emitted event Shipped()
-        
+        const event = supplyChain.Shipped()
+        await event.watch((err, res) => {
+            eventEmitted = true
+        })
 
-        // Mark an item as Sold by calling function buyItem()
-        
+        // Mark an item as Shipped by calling function shipItem()
+        await supplyChain.shipItem(upc, { from: distributorID })
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
-        
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+
+        // Set expected state
+        const shippedState = 5
+        // Set default address for unfilled IDs
+        const defaultAddress = '0x0000000000000000000000000000000000000000'
 
         // Verify the result set
-              
+        assert.equal(resultBufferTwo[2], productID, 'Error: Missing or Invalid productID')
+        assert.equal(resultBufferTwo[3], productNotes, 'Error: Missing or Invalid productNotes')
+        assert.equal(resultBufferTwo[4], productPrice, 'Error: Missing or Invalid productPrice')
+        assert.equal(resultBufferTwo[5], shippedState, 'Error: Missing or Invalid itemState')
+        assert.equal(resultBufferTwo[6], distributorID, 'Error: Missing or Invalid distributorID')
+        assert.equal(resultBufferTwo[7], defaultAddress, 'Error: Missing or Invalid retailerID')
+        assert.equal(resultBufferTwo[8], defaultAddress, 'Error: Missing or Invalid consumerID')
+        assert.equal(eventEmitted, true, 'Invalid event emitted')
     })    
 
     // 7th Test
