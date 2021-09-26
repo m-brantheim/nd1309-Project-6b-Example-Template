@@ -131,7 +131,7 @@ contract('SupplyChain', function(accounts) {
         const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
 
         // Set expected state
-        const processedState = 2
+        const packedState = 2
         // Set default address for unfilled IDs
         const defaultAddress = '0x0000000000000000000000000000000000000000'
 
@@ -141,7 +141,7 @@ contract('SupplyChain', function(accounts) {
         assert.equal(resultBufferTwo[2], productID, 'Error: Missing or Invalid productID')
         assert.equal(resultBufferTwo[3], productNotes, 'Error: Missing or Invalid productNotes')
         assert.equal(resultBufferTwo[4], 0, 'Error: Missing or Invalid productPrice')
-        assert.equal(resultBufferTwo[5], processedState, 'Error: Missing or Invalid itemState')
+        assert.equal(resultBufferTwo[5], packedState, 'Error: Missing or Invalid itemState')
         assert.equal(resultBufferTwo[6], defaultAddress, 'Error: Missing or Invalid distributorID')
         assert.equal(resultBufferTwo[7], defaultAddress, 'Error: Missing or Invalid retailerID')
         assert.equal(resultBufferTwo[8], defaultAddress, 'Error: Missing or Invalid consumerID')
@@ -153,19 +153,36 @@ contract('SupplyChain', function(accounts) {
         const supplyChain = await SupplyChain.deployed()
         
         // Declare and Initialize a variable for event
-        
+        let eventEmitted = false
         
         // Watch the emitted event ForSale()
-        
+        const event = supplyChain.ForSale()
+        await event.watch((err, res) => {
+            eventEmitted = true
+        })
 
         // Mark an item as ForSale by calling function sellItem()
-        
+        await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
-        
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+
+        // Set expected state
+        const soldState = 3
+        // Set default address for unfilled IDs
+        const defaultAddress = '0x0000000000000000000000000000000000000000'
 
         // Verify the result set
-          
+        assert.equal(resultBufferTwo[0], sku, 'Error: Invalid item SKU')
+        assert.equal(resultBufferTwo[1], upc, 'Error: Invalid item UPC')
+        assert.equal(resultBufferTwo[2], productID, 'Error: Missing or Invalid productID')
+        assert.equal(resultBufferTwo[3], productNotes, 'Error: Missing or Invalid productNotes')
+        assert.equal(resultBufferTwo[4], productPrice, 'Error: Missing or Invalid productPrice')
+        assert.equal(resultBufferTwo[5], soldState, 'Error: Missing or Invalid itemState')
+        assert.equal(resultBufferTwo[6], defaultAddress, 'Error: Missing or Invalid distributorID')
+        assert.equal(resultBufferTwo[7], defaultAddress, 'Error: Missing or Invalid retailerID')
+        assert.equal(resultBufferTwo[8], defaultAddress, 'Error: Missing or Invalid consumerID')
+        assert.equal(eventEmitted, true, 'Invalid event emitted')
     })    
 
     // 5th Test
