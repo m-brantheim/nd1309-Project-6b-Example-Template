@@ -19,7 +19,16 @@ contract('SupplyChain', function(accounts) {
     const distributorID = accounts[2]
     const retailerID = accounts[3]
     const consumerID = accounts[4]
-    const emptyAddress = '0x00000000000000000000000000000000000000'
+    const emptyAddress = '0x0000000000000000000000000000000000000000'
+
+    const addRoles = async _ => {
+        const supplyChain = await SupplyChain.deployed()
+        supplyChain.addFarmer(originFarmerID)
+        supplyChain.addDistributor(distributorID)
+        supplyChain.addRetailer(retailerID)
+        supplyChain.addConsumer(consumerID)
+    }
+    addRoles()
 
     ///Available Accounts
     ///==================
@@ -95,8 +104,6 @@ contract('SupplyChain', function(accounts) {
 
         // Set expected state
         const processedState = 1
-        // Set default address for unfilled IDs
-        const defaultAddress = '0x0000000000000000000000000000000000000000'
 
         // Verify the result set
         assert.equal(resultBufferTwo[0], sku, 'Error: Invalid item SKU')
@@ -105,9 +112,9 @@ contract('SupplyChain', function(accounts) {
         assert.equal(resultBufferTwo[3], productNotes, 'Error: Missing or Invalid productNotes')
         assert.equal(resultBufferTwo[4], 0, 'Error: Missing or Invalid productPrice')
         assert.equal(resultBufferTwo[5], processedState, 'Error: Missing or Invalid itemState')
-        assert.equal(resultBufferTwo[6], defaultAddress, 'Error: Missing or Invalid distributorID')
-        assert.equal(resultBufferTwo[7], defaultAddress, 'Error: Missing or Invalid retailerID')
-        assert.equal(resultBufferTwo[8], defaultAddress, 'Error: Missing or Invalid consumerID')
+        assert.equal(resultBufferTwo[6], emptyAddress, 'Error: Missing or Invalid distributorID')
+        assert.equal(resultBufferTwo[7], emptyAddress, 'Error: Missing or Invalid retailerID')
+        assert.equal(resultBufferTwo[8], emptyAddress, 'Error: Missing or Invalid consumerID')
         assert.equal(eventEmitted, true, 'Invalid event emitted')
     })
 
@@ -132,8 +139,6 @@ contract('SupplyChain', function(accounts) {
 
         // Set expected state
         const packedState = 2
-        // Set default address for unfilled IDs
-        const defaultAddress = '0x0000000000000000000000000000000000000000'
 
         // Verify the result set
         assert.equal(resultBufferTwo[0], sku, 'Error: Invalid item SKU')
@@ -142,9 +147,9 @@ contract('SupplyChain', function(accounts) {
         assert.equal(resultBufferTwo[3], productNotes, 'Error: Missing or Invalid productNotes')
         assert.equal(resultBufferTwo[4], 0, 'Error: Missing or Invalid productPrice')
         assert.equal(resultBufferTwo[5], packedState, 'Error: Missing or Invalid itemState')
-        assert.equal(resultBufferTwo[6], defaultAddress, 'Error: Missing or Invalid distributorID')
-        assert.equal(resultBufferTwo[7], defaultAddress, 'Error: Missing or Invalid retailerID')
-        assert.equal(resultBufferTwo[8], defaultAddress, 'Error: Missing or Invalid consumerID')
+        assert.equal(resultBufferTwo[6], emptyAddress, 'Error: Missing or Invalid distributorID')
+        assert.equal(resultBufferTwo[7], emptyAddress, 'Error: Missing or Invalid retailerID')
+        assert.equal(resultBufferTwo[8], emptyAddress, 'Error: Missing or Invalid consumerID')
         assert.equal(eventEmitted, true, 'Invalid event emitted')
     })    
 
@@ -169,8 +174,6 @@ contract('SupplyChain', function(accounts) {
         
         // Set expected state
         const forSaleState = 3
-        // Set default address for unfilled IDs
-        const defaultAddress = '0x0000000000000000000000000000000000000000'
 
         // Verify the result set
         assert.equal(resultBufferTwo[0], sku, 'Error: Invalid item SKU')
@@ -179,9 +182,9 @@ contract('SupplyChain', function(accounts) {
         assert.equal(resultBufferTwo[3], productNotes, 'Error: Missing or Invalid productNotes')
         assert.equal(resultBufferTwo[4], productPrice, 'Error: Missing or Invalid productPrice')
         assert.equal(resultBufferTwo[5], forSaleState, 'Error: Missing or Invalid itemState')
-        assert.equal(resultBufferTwo[6], defaultAddress, 'Error: Missing or Invalid distributorID')
-        assert.equal(resultBufferTwo[7], defaultAddress, 'Error: Missing or Invalid retailerID')
-        assert.equal(resultBufferTwo[8], defaultAddress, 'Error: Missing or Invalid consumerID')
+        assert.equal(resultBufferTwo[6], emptyAddress, 'Error: Missing or Invalid distributorID')
+        assert.equal(resultBufferTwo[7], emptyAddress, 'Error: Missing or Invalid retailerID')
+        assert.equal(resultBufferTwo[8], emptyAddress, 'Error: Missing or Invalid consumerID')
         assert.equal(eventEmitted, true, 'Invalid event emitted')
     })    
 
@@ -199,11 +202,14 @@ contract('SupplyChain', function(accounts) {
         })
 
         const farmerBalancePre = web3.eth.getBalance(originFarmerID);
+        const distributorBalancePre = web3.eth.getBalance(distributorID);
+        let gasPrice = 0;
 
         // Mark an item as Sold by calling function buyItem()
-        await supplyChain.buyItem(upc, { from: distributorID, value: productPrice })
+        await supplyChain.buyItem(upc, { from: distributorID, value: productPrice, gasPrice })
 
         const farmerBalancePost = web3.eth.getBalance(originFarmerID);
+        const distributorBalancePost = web3.eth.getBalance(distributorID);
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
         const resultBufferOne = await supplyChain.fetchItemBufferOne.call(upc)
@@ -232,7 +238,8 @@ contract('SupplyChain', function(accounts) {
         assert.equal(resultBufferTwo[8], defaultAddress, 'Error: Missing or Invalid consumerID')
         assert.equal(eventEmitted, true, 'Invalid event emitted')
         assert.equal(farmerBalancePost - farmerBalancePre, productPrice, 'Farmer did not receive correct payment')
-    })    
+        assert.equal(distributorBalancePre - distributorBalancePost - gasPrice, productPrice, 'Distributor did not send correct payment')
+    })
 
     // 6th Test
     it("Testing smart contract function shipItem() that allows a distributor to ship coffee", async() => {
