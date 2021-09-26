@@ -166,9 +166,9 @@ contract('SupplyChain', function(accounts) {
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
         const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
-
+        
         // Set expected state
-        const soldState = 3
+        const forSaleState = 3
         // Set default address for unfilled IDs
         const defaultAddress = '0x0000000000000000000000000000000000000000'
 
@@ -178,7 +178,7 @@ contract('SupplyChain', function(accounts) {
         assert.equal(resultBufferTwo[2], productID, 'Error: Missing or Invalid productID')
         assert.equal(resultBufferTwo[3], productNotes, 'Error: Missing or Invalid productNotes')
         assert.equal(resultBufferTwo[4], productPrice, 'Error: Missing or Invalid productPrice')
-        assert.equal(resultBufferTwo[5], soldState, 'Error: Missing or Invalid itemState')
+        assert.equal(resultBufferTwo[5], forSaleState, 'Error: Missing or Invalid itemState')
         assert.equal(resultBufferTwo[6], defaultAddress, 'Error: Missing or Invalid distributorID')
         assert.equal(resultBufferTwo[7], defaultAddress, 'Error: Missing or Invalid retailerID')
         assert.equal(resultBufferTwo[8], defaultAddress, 'Error: Missing or Invalid consumerID')
@@ -190,20 +190,48 @@ contract('SupplyChain', function(accounts) {
         const supplyChain = await SupplyChain.deployed()
         
         // Declare and Initialize a variable for event
-        
+        let eventEmitted = false
         
         // Watch the emitted event Sold()
         var event = supplyChain.Sold()
-        
+        await event.watch((err, res) => {
+            eventEmitted = true
+        })
+
+        const farmerBalancePre = web3.eth.getBalance(originFarmerID);
 
         // Mark an item as Sold by calling function buyItem()
-        
+        await supplyChain.buyItem(upc, { from: distributorID, value: productPrice })
+
+        const farmerBalancePost = web3.eth.getBalance(originFarmerID);
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
-        
+        const resultBufferOne = await supplyChain.fetchItemBufferOne.call(upc)
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+
+        // Set expected state
+        const soldState = 4
+        // Set default address for unfilled IDs
+        const defaultAddress = '0x0000000000000000000000000000000000000000'
 
         // Verify the result set
-        
+        assert.equal(resultBufferOne[0], sku, 'Error: Invalid item SKU')
+        assert.equal(resultBufferOne[1], upc, 'Error: Invalid item UPC')
+        assert.equal(resultBufferOne[2], distributorID, 'Error: Missing or Invalid ownerID')
+        assert.equal(resultBufferOne[3], originFarmerID, 'Error: Missing or Invalid originFarmerID')
+        assert.equal(resultBufferOne[4], originFarmName, 'Error: Missing or Invalid originFarmName')
+        assert.equal(resultBufferOne[5], originFarmInformation, 'Error: Missing or Invalid originFarmInformation')
+        assert.equal(resultBufferOne[6], originFarmLatitude, 'Error: Missing or Invalid originFarmLatitude')
+        assert.equal(resultBufferOne[7], originFarmLongitude, 'Error: Missing or Invalid originFarmLongitude')
+        assert.equal(resultBufferTwo[2], productID, 'Error: Missing or Invalid productID')
+        assert.equal(resultBufferTwo[3], productNotes, 'Error: Missing or Invalid productNotes')
+        assert.equal(resultBufferTwo[4], productPrice, 'Error: Missing or Invalid productPrice')
+        assert.equal(resultBufferTwo[5], soldState, 'Error: Missing or Invalid itemState')
+        assert.equal(resultBufferTwo[6], distributorID, 'Error: Missing or Invalid distributorID')
+        assert.equal(resultBufferTwo[7], defaultAddress, 'Error: Missing or Invalid retailerID')
+        assert.equal(resultBufferTwo[8], defaultAddress, 'Error: Missing or Invalid consumerID')
+        assert.equal(eventEmitted, true, 'Invalid event emitted')
+        assert.equal(farmerBalancePost - farmerBalancePre, productPrice, 'Farmer did not receive correct payment')
     })    
 
     // 6th Test

@@ -102,13 +102,13 @@ contract SupplyChain {
   
   // Define a modifier that checks if an item.state of a upc is Packed
   modifier packed(uint _upc) {
-
+      require(items[_upc].itemState == State.Packed);
     _;
   }
 
   // Define a modifier that checks if an item.state of a upc is ForSale
   modifier forSale(uint _upc) {
-
+      require(items[_upc].itemState == State.ForSale);
     _;
   }
 
@@ -222,19 +222,21 @@ contract SupplyChain {
   // and any excess ether sent is refunded back to the buyer
   function buyItem(uint _upc) public payable 
     // Call modifier to check if upc has passed previous supply chain stage
-    
+    forSale(_upc)
     // Call modifer to check if buyer has paid enough
-    
+    paidEnough(items[_upc].productPrice)
     // Call modifer to send any excess ether back to buyer
-    
+    checkValue(_upc)
     {
-    
-    // Update the appropriate fields - ownerID, distributorID, itemState
-    
-    // Transfer money to farmer
-    
-    // emit the appropriate event
-    
+      // Update the appropriate fields - ownerID, distributorID, itemState
+      Item storage item = items[_upc];
+      item.ownerID = msg.sender;
+      item.distributorID = msg.sender;
+      item.itemState = State.Sold;
+      // Transfer money to farmer
+      item.originFarmerID.transfer(item.productPrice);
+      // emit the appropriate event
+      emit Sold(_upc);
   }
 
   // Define a function 'shipItem' that allows the distributor to mark an item 'Shipped'
