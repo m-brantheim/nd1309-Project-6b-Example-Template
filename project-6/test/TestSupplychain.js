@@ -116,19 +116,36 @@ contract('SupplyChain', function(accounts) {
         const supplyChain = await SupplyChain.deployed()
         
         // Declare and Initialize a variable for event
-        
+        let eventEmitted = false
         
         // Watch the emitted event Packed()
-        
+        const event = supplyChain.Packed()
+        await event.watch((err, res) => {
+            eventEmitted = true
+        })
 
         // Mark an item as Packed by calling function packItem()
-        
+        await supplyChain.packItem(upc, { from: originFarmerID })
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
-        
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+
+        // Set expected state
+        const processedState = 2
+        // Set default address for unfilled IDs
+        const defaultAddress = '0x0000000000000000000000000000000000000000'
 
         // Verify the result set
-        
+        assert.equal(resultBufferTwo[0], sku, 'Error: Invalid item SKU')
+        assert.equal(resultBufferTwo[1], upc, 'Error: Invalid item UPC')
+        assert.equal(resultBufferTwo[2], productID, 'Error: Missing or Invalid productID')
+        assert.equal(resultBufferTwo[3], productNotes, 'Error: Missing or Invalid productNotes')
+        assert.equal(resultBufferTwo[4], 0, 'Error: Missing or Invalid productPrice')
+        assert.equal(resultBufferTwo[5], processedState, 'Error: Missing or Invalid itemState')
+        assert.equal(resultBufferTwo[6], defaultAddress, 'Error: Missing or Invalid distributorID')
+        assert.equal(resultBufferTwo[7], defaultAddress, 'Error: Missing or Invalid retailerID')
+        assert.equal(resultBufferTwo[8], defaultAddress, 'Error: Missing or Invalid consumerID')
+        assert.equal(eventEmitted, true, 'Invalid event emitted')
     })    
 
     // 4th Test
