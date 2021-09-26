@@ -177,14 +177,15 @@ contract SupplyChain {
   // Define a function 'processtItem' that allows a farmer to mark an item 'Processed'
   function processItem(uint _upc) public 
   // Call modifier to check if upc has passed previous supply chain stage
-  
+  harvested(_upc)
   // Call modifier to verify caller of this function
-  
+  verifyCaller(items[_upc].originFarmerID)
   {
     // Update the appropriate fields
-    
+    Item storage item = items[_upc];
+    item.itemState = State.Processed;
     // Emit the appropriate event
-    
+    emit Processed(_upc);
   }
 
   // Define a function 'packItem' that allows a farmer to mark an item 'Packed'
@@ -286,27 +287,27 @@ contract SupplyChain {
   string  originFarmLongitude
   ) 
   {
-  // Assign values to the 8 parameters
-  Item storage item = items[_upc];
-  itemSKU = item.sku;
-  itemUPC = item.upc;
-  ownerID = item.ownerID;
-  originFarmerID = item.originFarmerID;
-  originFarmName = item.originFarmName;
-  originFarmInformation = item.originFarmInformation;
-  originFarmLatitude = item.originFarmLatitude;
-  originFarmLongitude = item.originFarmLongitude;
+    // Assign values to the 8 parameters
+    Item storage item = items[_upc];
+    itemSKU = item.sku;
+    itemUPC = item.upc;
+    ownerID = item.ownerID;
+    originFarmerID = item.originFarmerID;
+    originFarmName = item.originFarmName;
+    originFarmInformation = item.originFarmInformation;
+    originFarmLatitude = item.originFarmLatitude;
+    originFarmLongitude = item.originFarmLongitude;
 
-  return 
-  (
-  itemSKU,
-  itemUPC,
-  ownerID,
-  originFarmerID,
-  originFarmName,
-  originFarmInformation,
-  originFarmLatitude,
-  originFarmLongitude
+    return 
+    (
+    itemSKU,
+    itemUPC,
+    ownerID,
+    originFarmerID,
+    originFarmName,
+    originFarmInformation,
+    originFarmLatitude,
+    originFarmLongitude
   );
   }
 
@@ -325,19 +326,28 @@ contract SupplyChain {
   ) 
   {
     // Assign values to the 9 parameters
-  
+    Item storage item = items[_upc];
+    itemSKU = item.sku;
+    itemUPC = item.upc;
+    productID = item.productID;
+    productNotes = item.productNotes;
+    productPrice = item.productPrice;
+    itemState = uint(item.itemState);
+    distributorID = item.distributorID;
+    retailerID = item.retailerID;
+    consumerID = item.consumerID;
     
-  return 
-  (
-  itemSKU,
-  itemUPC,
-  productID,
-  productNotes,
-  productPrice,
-  itemState,
-  distributorID,
-  retailerID,
-  consumerID
-  );
+    return 
+    (
+    itemSKU,
+    itemUPC,
+    productID,
+    productNotes,
+    productPrice,
+    itemState,
+    distributorID,
+    retailerID,
+    consumerID
+    );
   }
 }
