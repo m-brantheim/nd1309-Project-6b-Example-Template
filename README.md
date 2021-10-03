@@ -13,6 +13,11 @@ The DApp User Interface when running should look like...
 ![truffle test](images/ftc_transaction_history.png)
 
 
+## Deploy info
+The SupplyChain.sol contract is deployed on the Rinkeby test network:
+https://rinkeby.etherscan.io/address/0x55d3678ed531649593a8bb3381522ced9ecf03c4
+Tx Hash: https://rinkeby.etherscan.io/tx/0x9d05009a99f58ac932d929df0c2ae13907b3921edb957780a3d190d310cad22a
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
